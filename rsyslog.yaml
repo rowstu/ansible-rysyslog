@@ -1,0 +1,23 @@
+---
+- name: Configure rsyslog to send remote syslog message to SIEM
+  hosts: misc
+
+  tasks:
+  - name: add line to rsyslog.conf - web hosts on UDP port 10016
+    lineinfile:
+      path: /etc/rsyslog.conf
+      line: '*.info <remote rsyslog server name>:10016'
+      validate: /usr/sbin/rsyslogd -N1 -f %s
+
+  - name: remove an old IP from the rsyslog file
+    lineinfile:
+      path: /etc/rsyslog.conf
+      state: absent
+      regexp: '10.0.0.1'
+      validate: /usr/sbin/rsyslogd -N1 -f %s
+    ignore_errors: true
+
+  - name: Restart rsyslog service
+    service:
+      name: rsyslog
+      state: restarted
