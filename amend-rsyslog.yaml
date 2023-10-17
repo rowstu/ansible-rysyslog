@@ -1,0 +1,19 @@
+---
+- name: Configure rsyslog
+  hosts: all
+
+  tasks:
+  - name: Amend existing rsyslog entry
+    lineinfile:
+      path: /etc/rsyslog.conf
+      regexp: '^\*\.info @<old collector>'
+      line: '*.error @<>new.collector.name:port'
+      validate: /usr/sbin/rsyslogd -N1 -f %s
+    notify:
+      - Restart rsyslog
+
+  handlers:
+  - name: Restart rsyslog
+    service:
+      name: rsyslog
+      state: restarted
